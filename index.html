@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>삼행시 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .char-count {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .char-count.warning {
+            color: #f44336;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            min-height: 150px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .poem-line {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .poem-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            border-left: 4px solid #c62828;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            input[type="text"],
+            button {
+                font-size: 1rem;
+            }
+
+            .poem-line {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>삼행시 생성기</h1>
+
+        <div class="input-group">
+            <label for="word-input">단어를 입력하세요 (3글자)</label>
+            <input
+                type="text"
+                id="word-input"
+                placeholder="예: 사랑, 행복, 꿈..."
+                maxlength="3"
+                autocomplete="off"
+            >
+            <div class="char-count" id="char-count">0 / 3</div>
+        </div>
+
+        <button id="generate-btn" onclick="generatePoem()">삼행시 생성</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">삼행시를 생성하고 있습니다...</div>
+        </div>
+
+        <div class="result" id="result">
+            <h2>생성된 삼행시</h2>
+            <div id="poem-content"></div>
+        </div>
+
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const wordInput = document.getElementById('word-input');
+        const charCount = document.getElementById('char-count');
+        const generateBtn = document.getElementById('generate-btn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const poemContent = document.getElementById('poem-content');
+        const errorDiv = document.getElementById('error');
+
+        // 글자 수 카운터
+        wordInput.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = `${length} / 3`;
+
+            if (length === 3) {
+                charCount.classList.remove('warning');
+            } else {
+                charCount.classList.add('warning');
+            }
+        });
+
+        // Enter 키 입력 처리
+        wordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.length === 3) {
+                generatePoem();
+            }
+        });
+
+        async function generatePoem() {
+            const word = wordInput.value.trim();
+
+            // 입력 검증
+            if (word.length !== 3) {
+                showError('정확히 3글자를 입력해주세요.');
+                return;
+            }
+
+            // UI 상태 변경
+            generateBtn.disabled = true;
+            loading.classList.add('show');
+            result.classList.remove('show');
+            errorDiv.classList.remove('show');
+
+            try {
+                // API 호출
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ word: word })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '삼행시 생성에 실패했습니다.');
+                }
+
+                const data = await response.json();
+
+                // 결과 표시
+                displayPoem(data.poem);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || '서버와의 통신 중 오류가 발생했습니다.');
+            } finally {
+                // UI 상태 복원
+                generateBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        function displayPoem(poem) {
+            // 삼행시 파싱 및 표시
+            const lines = poem.split('\n').filter(line => line.trim() !== '');
+
+            poemContent.innerHTML = '';
+
+            lines.forEach(line => {
+                const div = document.createElement('div');
+                div.className = 'poem-line';
+                div.textContent = line;
+                poemContent.appendChild(div);
+            });
+
+            result.classList.add('show');
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+
+            // 5초 후 에러 메시지 자동 숨김
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "threeline-poem-generator",
+  "version": "1.0.0",
+  "description": "삼행시 생성기 - Claude API를 사용한 웹 앱",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "vercel-dev": "vercel dev",
+    "build": "echo 'No build step needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
